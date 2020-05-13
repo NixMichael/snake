@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Slackey&display=swap');
+
+        * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            max-width: 100vw;
+            max-height: 100vh;
+            width: 100vw;
+            height: 100vh;
+            background-color:rgb(221, 221, 221);
+            font-family: 'Slackey', cursive;
+        }
+
+        /* ********* */
+        /* LEFT SIDE */
+        /* ********* */
+        .left {
+            width: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-right: 4vw;
+        }
+
+        .scoreContainer {
+            height: 3rem;
+            width: 200px;
+            margin-bottom: 1rem;
+            border: 2px black solid;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .restart, .restart2 {
+            width: 100px;
+            height: 2em;
+            background-color: rgb(150,200,150);
+            border-radius: 6px;
+            border: 2px solid rgb(54,161,81);
+        }
+
+        /* ********* */
+        /* MAIN GAME */
+        /* ********* */
+        .right {
+            width: 600px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            
+        }
+
+        .score {
+            text-align: center;
+        }
+
+        canvas {
+            background: black;
+        }
+
+        .gameEnd {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .show {
+            display: flex;
+        }
+
+        .gameEndMessage {
+            width: 250px;
+            height: 150px;
+            border-radius: 15px;
+            background-color: rgba(255,255,255,0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            /* 93, 190, 235, 0.3); */
+        }
+
+        .msg {
+            margin-bottom: 1rem;
+        }
+
+        @media screen and (max-width: 900px) {
+            body {
+                flex-direction: column;
+            }
+
+            .left {
+                flex-direction: row;
+                justify-content: space-around;
+                width: 100vw;
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
+
+            .scoreContainer {
+                margin-bottom: 0;
+                
+            }
+
+            .restart {
+                justify-self: flex-end;
+                
+            }
+
+            .right {
+                justify-content: center;
+                width: 100vw;
+            }
+
+            .gameEndMessage {
+                font-size: 1.5rem;
+                height: 120px;
+                width: 200px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <!-- LEFT COLUMN -->
+    <div class="left">
+        <div class="scoreContainer">
+            <p class="score"></p>
+        </div>
+
+        <input type="button" class="restart" value="Restart"/>
+    </div>
+
+    <!-- MAIN GAME -->
+    <div class="right">
+        
+            
+            <canvas></canvas>
+        
+
+        <div class="gameEnd">
+            <div class="gameEndMessage">
+                <div class="msg"></div>
+                <input type="button" class="restart2" value="Restart"/>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        const canvas = document.querySelector('canvas');
+        const c = canvas.getContext('2d');
+        const scoreDiv = document.querySelector('.score');
+        const stopGame = document.querySelector('.gameEnd');
+        const finalResult = document.querySelector('.msg');
+        const reset = document.querySelector('.restart');
+        const reset2 = document.querySelector('.restart2');
+
+        const blockSize = 15;
+
+        let currentHead = {
+            x: undefined,
+            y: undefined
+        }
+
+        let direction;
+
+        let x;
+        let y;
+
+        let score = 0;
+
+        let xTarget;
+        let yTarget;
+
+        let loopInterval = 100;
+        let gameEnd;
+
+        let w = 600;
+        let h = 400;
+
+        canvas.width = w;
+        canvas.height = h;
+
+        function draw() {
+
+            // DRAW TARGET
+            let image = new Image();
+            image.src = 'Red_Apple.png';
+            c.drawImage(image, xTarget, yTarget);
+
+            // DRAW SNAKE
+            let head = new Image();
+            head.src = 'head.png';
+            c.drawImage(head, x[0], y[0]);
+            // c.fillStyle = 'rgb(250,0,0)';
+            // c.fillRect(x[0], y[0], blockSize, blockSize);
+            
+            for (let i = 1; i < x.length + 1; i++) {
+                if (i % 2 > 0){
+                    c.fillStyle = 'rgb(54, 161, 81)';
+                } else if (i % 2 === 0) {
+                    c.fillStyle = 'rgb(155,200,150)';
+                }
+                c.fillRect(x[i], y[i], blockSize, blockSize);
+            }
+
+        }
+
+        function generateTarget() {
+            xTarget = (Math.floor(Math.random() * (w / 15))) * 15;
+            yTarget = (Math.floor(Math.random() * (h / 15))) * 15;
+        }
+
+        function move() {
+            if (x[0] === xTarget && y[0] === yTarget) {
+                    score += 5;
+                    generateTarget();
+                } else {
+                    x.pop();
+                    y.pop();
+                }
+        }
+
+        function checkCollision() {
+            for (let i = 1; i < x.length + 1; i++) {
+                if (x[0] === x[i] && y[0] === y[i]) {
+                    gameOver(false);
+                } else if (score >= 350) {
+                    gameOver(true);
+                }
+            }
+        }
+
+        function gameOver(result) {
+            let resultText;
+
+            gameEnd = true;
+            c.clearRect(0,0,w,h);
+
+            if (result) {
+                resultText = 'win';
+            } else if (!result) {
+                resultText = 'lose';
+            }
+            
+            finalResult.textContent = `You ${resultText}!`;
+            stopGame.classList.add('show');
+
+        }
+
+
+        let game = setInterval(() => {
+            c.clearRect(0,0,w,h);
+
+            currentHead.x = x[0];
+            currentHead.y = y[0];
+            
+            if (!gameEnd) {
+                if (direction === 'r') {
+                    x.unshift(currentHead.x + 15);
+                    y.unshift(currentHead.y);
+                    move();
+                } else if (direction === 'l') {
+                    x.unshift(currentHead.x - 15);
+                    y.unshift(currentHead.y);
+                    move();
+                } else if (direction === 'd') {
+                    y.unshift(currentHead.y + 15);
+                    x.unshift(currentHead.x);
+                    move();
+                } else if (direction === 'u') {
+                    y.unshift(currentHead.y - 15);
+                    x.unshift(currentHead.x);
+                    move();
+                }
+
+                for (let i = 0; i < x.length; i++) {
+                    if (x[i] > w) {
+                        x[i] = 0;
+                    } else if (x[i] < 0) {
+                        x[i] = w;
+                    }
+
+                    if (y[i] < 0) {
+                        y[i] = h;
+                    } else if (y[i] > h) {
+                        y[i] = 0;
+                    }
+                }
+            }
+
+            draw();
+
+            scoreDiv.textContent = `Score: ${score}`;
+            checkCollision();
+
+        }, loopInterval);
+
+
+
+        addEventListener('keydown', (e) => {
+            // console.log(e.keyCode);
+            if (e.keyCode === 76 && direction !== 'l') {
+                direction = 'r';
+            } else if (e.keyCode === 75 && direction !== 'u') {
+                direction = 'd';
+            } else if (e.keyCode === 73 && direction !== 'd') {
+                direction = 'u';
+            } else if (e.keyCode === 74 && direction !== 'r') {
+                direction = 'l';
+            }
+
+        })
+
+        reset.addEventListener('click', init);
+        reset2.addEventListener('click', init);
+
+        function init() {
+            stopGame.classList.remove('show');
+            generateTarget();
+            x = [xTarget, xTarget-15, xTarget-30, xTarget-45];
+            y = [yTarget, yTarget, yTarget, yTarget];
+            gameEnd = false;
+            score = 0;
+            scoreDiv.textContent = score;
+            generateTarget();
+            direction = '';
+        }
+
+        init();
+
+    </script>
+</body>
+</html>
