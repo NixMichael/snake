@@ -227,19 +227,21 @@
         canvas.width = w;
         canvas.height = h;
 
+        let image = new Image();
+        image.src = 'Red_Apple.png';
+
+        let head = new Image();
+
         function draw() {
 
             // DRAW TARGET
-            let image = new Image();
-            image.src = 'Red_Apple.png';
+            
             c.drawImage(image, xTarget, yTarget);
 
             // DRAW SNAKE
-            let head = new Image();
-            head.src = `SnakeHead_${direction}.png`;
-            if (ready) {
-                head.src = 'SnakeHead_r.png';
-            }
+            // let head = new Image();
+            // head.src = `SnakeHead_${direction}.png`;
+            
             // head.src = 'head.png';
             c.drawImage(head, x[0], y[0]);
             // c.fillStyle = 'rgb(250,0,0)';
@@ -381,6 +383,8 @@
                 ready = false;
             }
 
+            head.src = `SnakeHead_${direction}.png`;
+
         })
 
         reset[0].addEventListener('click', init);
@@ -391,8 +395,8 @@
             generateStartPoint();
             x = [sxTarget, sxTarget-15, sxTarget-30, sxTarget-45];
             y = [syTarget, syTarget, syTarget, syTarget];
+            head.src = 'SnakeHead_r.png';
             gameEnd = false;
-            ready = true;
             score = 0;
             scoreDiv.textContent = score;
             generateTarget();
