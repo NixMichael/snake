@@ -14,8 +14,13 @@
         }
 
         body {
-            display: flex;
+            display: grid;
+            grid-template-areas: "TITLE TITLE" "LEFT RIGHT";
             justify-content: center;
+            /* align-items: center; */
+            align-content: center;
+            justify-items: center;
+            margin-top: -1rem;
             max-width: 100vw;
             max-height: 100vh;
             width: 100vw;
@@ -24,16 +29,23 @@
             font-family: 'Slackey', cursive;
         }
 
+        .title {
+            grid-area: TITLE;
+            margin-bottom: 4rem;
+            height: 3rem;
+        }
+
         /* ********* */
         /* LEFT SIDE */
         /* ********* */
         .left {
+            grid-area: LEFT;
             width: 220px;
+            margin-right: 4rem;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            margin-right: 4vw;
         }
 
         .scoreContainer {
@@ -46,7 +58,7 @@
             align-items: center;
         }
 
-        .restart, .restart2 {
+        .restart {
             width: 100px;
             height: 2em;
             background-color: rgb(150,200,150);
@@ -58,11 +70,11 @@
         /* MAIN GAME */
         /* ********* */
         .right {
+            grid-area: RIGHT;
             width: 600px;
             display: flex;
             justify-content: flex-start;
             align-items: center;
-            
         }
 
         .score {
@@ -108,30 +120,36 @@
 
         @media screen and (max-width: 900px) {
             body {
-                flex-direction: column;
+                grid-template-areas: "TITLE" "LEFT" "RIGHT";
+            }
+
+            .title {
+                margin-bottom: 3rem;
             }
 
             .left {
                 flex-direction: row;
-                justify-content: space-around;
-                width: 100vw;
-                margin-right: 0;
+                justify-content: space-between;
+                width: 600px;
                 margin-bottom: 1rem;
+                margin-right: 0;
             }
 
             .scoreContainer {
                 margin-bottom: 0;
-                
             }
 
             .restart {
                 justify-self: flex-end;
-                
             }
 
             .right {
                 justify-content: center;
                 width: 100vw;
+            }
+
+            canvas {
+                margin-left: 0;
             }
 
             .gameEndMessage {
@@ -144,6 +162,7 @@
     </style>
 </head>
 <body>
+    <div class="title"><h1>SNAKE GAME</h1></div>
     <!-- LEFT COLUMN -->
     <div class="left">
         <div class="scoreContainer">
@@ -163,7 +182,7 @@
         <div class="gameEnd">
             <div class="gameEndMessage">
                 <div class="msg"></div>
-                <input type="button" class="restart2" value="Restart"/>
+                <input type="button" class="restart" value="Restart"/>
             </div>
         </div>
 
@@ -174,8 +193,8 @@
         const scoreDiv = document.querySelector('.score');
         const stopGame = document.querySelector('.gameEnd');
         const finalResult = document.querySelector('.msg');
-        const reset = document.querySelector('.restart');
-        const reset2 = document.querySelector('.restart2');
+        const reset = document.querySelectorAll('.restart');
+        // const reset2 = document.querySelector('.restart2');
 
         const blockSize = 15;
 
@@ -191,14 +210,18 @@
 
         let score = 0;
 
+        let sxTarget;
+        let syTarget;
         let xTarget;
         let yTarget;
+        let snakeLength = 4;
 
         let loopInterval = 100;
         let gameEnd;
+        let ready;
 
         let w = 600;
-        let h = 400;
+        let h = 405;
 
         canvas.width = w;
         canvas.height = h;
@@ -212,7 +235,11 @@
 
             // DRAW SNAKE
             let head = new Image();
-            head.src = 'head.png';
+            head.src = `SnakeHead_${direction}.png`;
+            if (ready) {
+                head.src = 'SnakeHead_r.png';
+            }
+            // head.src = 'head.png';
             c.drawImage(head, x[0], y[0]);
             // c.fillStyle = 'rgb(250,0,0)';
             // c.fillRect(x[0], y[0], blockSize, blockSize);
@@ -228,9 +255,23 @@
 
         }
 
+        function generateStartPoint() {
+            sxTarget = ((Math.floor(Math.random() * (525 / 15))) * 15) + (snakeLength * blockSize);
+            // sxTarget = Math.floor(Math.random() * (w - (blockSize * (5)))) + (blockSize * 5);
+            // sxTarget = ((Math.floor(Math.random() * ((w - (blockSize * x.length)) / blockSize))) * blockSize) + (blockSize * x.length);
+            syTarget = (Math.floor(Math.random() * (h / 15))) * 15;
+        }
+
         function generateTarget() {
             xTarget = (Math.floor(Math.random() * (w / 15))) * 15;
             yTarget = (Math.floor(Math.random() * (h / 15))) * 15;
+
+            for (let i = 0; i < x.length; i++) {
+                if (xTarget === x[i] && yTarget === y[i]) {
+                    console.log(`snake: ${x[i]}, ${y[i]} apple: ${xTarget}, ${yTarget}`);
+                    generateTarget();
+                }
+            }
         }
 
         function move() {
@@ -297,21 +338,23 @@
                 }
 
                 for (let i = 0; i < x.length; i++) {
-                    if (x[i] > w) {
+                    if (x[i] >= w) {
                         x[i] = 0;
-                    } else if (x[i] < 0) {
-                        x[i] = w;
+                    } else if (x[i] <= -15) {
+                        x[i] = w - 15;
                     }
 
-                    if (y[i] < 0) {
-                        y[i] = h;
-                    } else if (y[i] > h) {
+                    if (y[i] <= -15) {
+                        y[i] = h - 15;
+                    } else if (y[i] >= h) {
                         y[i] = 0;
                     }
                 }
             }
 
             draw();
+            
+            
 
             scoreDiv.textContent = `Score: ${score}`;
             checkCollision();
@@ -322,27 +365,33 @@
 
         addEventListener('keydown', (e) => {
             // console.log(e.keyCode);
+            
             if (e.keyCode === 76 && direction !== 'l') {
                 direction = 'r';
+                ready = false;
             } else if (e.keyCode === 75 && direction !== 'u') {
                 direction = 'd';
+                ready = false;
             } else if (e.keyCode === 73 && direction !== 'd') {
                 direction = 'u';
+                ready = false;
             } else if (e.keyCode === 74 && direction !== 'r') {
                 direction = 'l';
+                ready = false;
             }
 
         })
 
-        reset.addEventListener('click', init);
-        reset2.addEventListener('click', init);
+        reset[0].addEventListener('click', init);
+        reset[1].addEventListener('click', init);
 
         function init() {
             stopGame.classList.remove('show');
-            generateTarget();
-            x = [xTarget, xTarget-15, xTarget-30, xTarget-45];
-            y = [yTarget, yTarget, yTarget, yTarget];
+            generateStartPoint();
+            x = [sxTarget, sxTarget-15, sxTarget-30, sxTarget-45];
+            y = [syTarget, syTarget, syTarget, syTarget];
             gameEnd = false;
+            ready = true;
             score = 0;
             scoreDiv.textContent = score;
             generateTarget();
