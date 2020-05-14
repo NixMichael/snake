@@ -383,7 +383,11 @@
                 ready = false;
             }
 
-            head.src = `SnakeHead_${direction}.png`;
+            if (ready === true) {
+                head.src = `SnakeHead_r.png`;
+            } else {
+                head.src = `SnakeHead_${direction}.png`;
+            }
 
         })
 
@@ -397,6 +401,7 @@
             y = [syTarget, syTarget, syTarget, syTarget];
             head.src = 'SnakeHead_r.png';
             gameEnd = false;
+            ready = true;
             score = 0;
             scoreDiv.textContent = score;
             generateTarget();
