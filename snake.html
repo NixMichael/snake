@@ -32,7 +32,10 @@
         .title {
             grid-area: TITLE;
             margin-bottom: 4rem;
-            height: 3rem;
+        }
+
+        .title h1 {
+            font-size: 2.5rem;
         }
 
         /* ********* */
@@ -82,7 +85,7 @@
         }
 
         canvas {
-            background: black;
+            background: rgb(26, 26, 26);
         }
 
         .gameEnd {
@@ -189,13 +192,17 @@
 
     </div>
     <script>
+
+        //DOM ELEMENTS
+        
         const canvas = document.querySelector('canvas');
         const c = canvas.getContext('2d');
         const scoreDiv = document.querySelector('.score');
         const stopGame = document.querySelector('.gameEnd');
         const finalResult = document.querySelector('.msg');
         const reset = document.querySelectorAll('.restart');
-        // const reset2 = document.querySelector('.restart2');
+
+        //VARIABLES
 
         const blockSize = 15;
 
@@ -209,17 +216,16 @@
         let x;
         let y;
 
-        let score = 0;
+        let score;
 
         let sxTarget;
         let syTarget;
         let xTarget;
         let yTarget;
-        let snakeLength = 4;
+        let snakeLength;
 
         let loopInterval = 100;
         let gameEnd;
-        let ready;
 
         let w = 600;
         let h = 405;
@@ -227,26 +233,35 @@
         canvas.width = w;
         canvas.height = h;
 
-        let image = new Image();
-        image.src = 'Red_Apple.png';
+        let apple = new Image();
+        apple.src = 'Red_Apple.png';
 
-        let head = new Image();
+        let headR = new Image();
+        let headL = new Image();
+        let headU = new Image();
+        let headD = new Image();
+
+
+        //FUNCTIONS
 
         function draw() {
 
             // DRAW TARGET
             
-            c.drawImage(image, xTarget, yTarget);
+            c.drawImage(apple, xTarget, yTarget);
 
             // DRAW SNAKE
-            // let head = new Image();
-            // head.src = `SnakeHead_${direction}.png`;
-            
-            // head.src = 'head.png';
+            if (direction === 'r') {
+                head = headR;
+            } else if (direction === 'l') {
+                head = headL;
+            } else if (direction === 'u') {
+                head = headU;
+            } else if (direction === 'd'){
+                head = headD;
+            }
             c.drawImage(head, x[0], y[0]);
-            // c.fillStyle = 'rgb(250,0,0)';
-            // c.fillRect(x[0], y[0], blockSize, blockSize);
-            
+
             for (let i = 1; i < x.length + 1; i++) {
                 if (i % 2 > 0){
                     c.fillStyle = 'rgb(54, 161, 81)';
@@ -259,15 +274,15 @@
         }
 
         function generateStartPoint() {
-            sxTarget = ((Math.floor(Math.random() * (525 / 15))) * 15) + (snakeLength * blockSize);
-            // sxTarget = Math.floor(Math.random() * (w - (blockSize * (5)))) + (blockSize * 5);
-            // sxTarget = ((Math.floor(Math.random() * ((w - (blockSize * x.length)) / blockSize))) * blockSize) + (blockSize * x.length);
-            syTarget = (Math.floor(Math.random() * (h / 15))) * 15;
+            // sxTarget = ((Math.floor(Math.random() * (525 / blockSize))) * blockSize) + (snakeLength * blockSize);
+            sxTarget = ((Math.floor(Math.random() * ((w - (blockSize * (snakeLength + 1))) / blockSize))
+            ) * blockSize) + (snakeLength * blockSize);
+            syTarget = (Math.floor(Math.random() * (h / blockSize))) * blockSize;
         }
 
         function generateTarget() {
-            xTarget = (Math.floor(Math.random() * (w / 15))) * 15;
-            yTarget = (Math.floor(Math.random() * (h / 15))) * 15;
+            xTarget = (Math.floor(Math.random() * (w / blockSize))) * blockSize;
+            yTarget = (Math.floor(Math.random() * (h / blockSize))) * blockSize;
 
             for (let i = 0; i < x.length; i++) {
                 if (xTarget === x[i] && yTarget === y[i]) {
@@ -323,19 +338,19 @@
             
             if (!gameEnd) {
                 if (direction === 'r') {
-                    x.unshift(currentHead.x + 15);
+                    x.unshift(currentHead.x + blockSize);
                     y.unshift(currentHead.y);
                     move();
                 } else if (direction === 'l') {
-                    x.unshift(currentHead.x - 15);
+                    x.unshift(currentHead.x - blockSize);
                     y.unshift(currentHead.y);
                     move();
                 } else if (direction === 'd') {
-                    y.unshift(currentHead.y + 15);
+                    y.unshift(currentHead.y + blockSize);
                     x.unshift(currentHead.x);
                     move();
                 } else if (direction === 'u') {
-                    y.unshift(currentHead.y - 15);
+                    y.unshift(currentHead.y - blockSize);
                     x.unshift(currentHead.x);
                     move();
                 }
@@ -343,12 +358,12 @@
                 for (let i = 0; i < x.length; i++) {
                     if (x[i] >= w) {
                         x[i] = 0;
-                    } else if (x[i] <= -15) {
-                        x[i] = w - 15;
+                    } else if (x[i] <= -blockSize) {
+                        x[i] = w - blockSize;
                     }
 
-                    if (y[i] <= -15) {
-                        y[i] = h - 15;
+                    if (y[i] <= -blockSize) {
+                        y[i] = h - blockSize;
                     } else if (y[i] >= h) {
                         y[i] = 0;
                     }
@@ -357,36 +372,23 @@
 
             draw();
             
-            
+            checkCollision();
 
             scoreDiv.textContent = `Score: ${score}`;
-            checkCollision();
 
         }, loopInterval);
 
 
-
         addEventListener('keydown', (e) => {
-            // console.log(e.keyCode);
             
             if (e.keyCode === 76 && direction !== 'l') {
                 direction = 'r';
-                ready = false;
             } else if (e.keyCode === 75 && direction !== 'u') {
                 direction = 'd';
-                ready = false;
             } else if (e.keyCode === 73 && direction !== 'd') {
                 direction = 'u';
-                ready = false;
             } else if (e.keyCode === 74 && direction !== 'r') {
                 direction = 'l';
-                ready = false;
-            }
-
-            if (ready === true) {
-                head.src = `SnakeHead_r.png`;
-            } else {
-                head.src = `SnakeHead_${direction}.png`;
             }
 
         })
@@ -396,16 +398,22 @@
 
         function init() {
             stopGame.classList.remove('show');
-            generateStartPoint();
-            x = [sxTarget, sxTarget-15, sxTarget-30, sxTarget-45];
-            y = [syTarget, syTarget, syTarget, syTarget];
-            head.src = 'SnakeHead_r.png';
             gameEnd = false;
-            ready = true;
+            snakeLength = 4;
             score = 0;
             scoreDiv.textContent = score;
-            generateTarget();
             direction = '';
+
+            generateStartPoint();
+            x = [sxTarget, sxTarget-blockSize, sxTarget-(2*blockSize), sxTarget-(3*blockSize)];
+            y = [syTarget, syTarget, syTarget, syTarget];
+            headR.src = 'SnakeHead_r.png';
+            headL.src = 'SnakeHead_l.png';
+            headU.src = 'SnakeHead_u.png';
+            headD.src = 'SnakeHead_d.png';
+            head = headR;
+            
+            generateTarget();
         }
 
         init();
