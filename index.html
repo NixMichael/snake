@@ -69,6 +69,30 @@
             border: 2px solid rgb(54,161,81);
         }
 
+        .instructions {
+            margin-top: 2em;
+            display: flex;
+            flex-direction: column;
+            background-color: rgb(150,200,150);
+            border-radius: 6px;
+            border: 2px solid rgb(54,161,81);
+        }
+
+        .top, .bottom {
+            display: flex;
+            justify-content: space-around;
+            margin: 0.5em;
+        }
+
+        .key {
+            margin: 0 0.5em;
+        }
+
+        .key p {
+            width: 100%;
+            text-align: center;
+        }
+
         /* ********* */
         /* MAIN GAME */
         /* ********* */
@@ -174,6 +198,29 @@
         </div>
 
         <input type="button" class="restart" value="Restart"/>
+
+        <div class="instructions">
+            <div class="top">
+                <div class="key">
+                    <img src="./keyboard_key_I.png" alt="Move up"/>
+                    <p>UP</p>
+                </div>
+            </div>
+            <div class="bottom">
+                <div class="key">
+                    <img src="./keyboard_key_J.png" alt="Move left"/>
+                    <p>LEFT</p>
+                </div>
+                <div class="key">
+                    <img src="./keyboard_key_K.png" alt="Move down"/>
+                    <p>DOWN</p>
+                </div>
+                <div class="key">
+                    <img src="./keyboard_key_L.png" alt="Move right"/>
+                    <p>RIGHT</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- MAIN GAME -->
